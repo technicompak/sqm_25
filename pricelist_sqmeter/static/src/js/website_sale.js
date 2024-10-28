@@ -35,7 +35,10 @@ publicWidget.registry.WebsiteSale.include({
         var $default_price = $parent.find(".oe_default_price:first .oe_currency_value");
         var $optional_price = $parent.find(".oe_optional:first .oe_currency_value");
         $price.text(self._priceToStr(combination.list_price));
-        $minPriceSqmElement.text(self._priceToStr(combination.price_per_sqm || 0));
+        /**
+        * Hard Coded - 1,2 für die MwSt.
+        */
+        $minPriceSqmElement.text(self._priceToStr((combination.price_per_sqm || 0) * 1.2));
         $default_price.text(self._priceToStr(combination.list_price));
         console.log(combination)
         var isCombinationPossible = true;
