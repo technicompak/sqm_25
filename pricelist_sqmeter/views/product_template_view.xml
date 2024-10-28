@@ -98,7 +98,7 @@
                         <t t-set="min_price_sqm" t-value="min([v.price_per_sqm for v in product.product_variant_ids if v.price_per_sqm > 0] or [product.list_price])"/>
                         <t t-if="min_price_sqm">
                                                     <!-- Und auch hier wieder hard die 20% mwst -->
-                            <br><span class="me-1 h3 mb-0" style="white-space: nowrap;font-size: 1rem; font-weight: 700;">Price per Squaremetere:  <t t-esc="combination_info['price_per_sqm'] * 1.2" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/></span>
+                            <br/><span class="me-1 h3 mb-0" style="white-space: nowrap;font-size: 1rem; font-weight: 700;">Price per Squaremetere:  <t t-esc="combination_info['price_per_sqm'] * 1.2" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/></span>
                         </t>
                     </span>
                 </t>
