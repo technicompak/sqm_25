@@ -75,7 +75,8 @@
             <t t-if="display_sqm">
                 <t t-set="min_price_sqm" t-value="min([v.price_per_sqm for v in product.product_variant_ids if v.price_per_sqm > 0] or [product.list_price])"/>
                 <t t-if="min_price_sqm">
-                    <span class="h6 mb-0" style="white-space: nowrap;">from <t t-esc="min_price_sqm" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²</span>
+                          <!-- hier wird die mwst einfach hart reingecoded -->
+                    <span class="h6 mb-0" style="white-space: nowrap;">from <t t-esc="min_price_sqm * 1.2" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²</span>
                 </t>
             </t>
             <t t-else="">
