@@ -93,19 +93,37 @@
                 <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
                 <t t-if="display_sqm">
                     <!-- Container for the new price per square meter display -->
-                    <span class="oe_price_new" style="display: flex;">
-                        <!-- Fetch the minimum price_per_sqm from the product variants -->
+                    <!-- Create a completely separate block container for the price per square meter -->
+                    <div style="width: 100%; display: block; margin-top: 10px; clear: both;"> <!-- Ensure it takes the full width -->
+                      <!-- Fetch the minimum price_per_sqm from the product variants -->
                         <t t-set="min_price_sqm" t-value="min([v.price_per_sqm for v in product.product_variant_ids if v.price_per_sqm > 0] or [product.list_price])"/>
                         <t t-if="min_price_sqm">
                                                     <!-- Und auch hier wieder hard die 20% mwst -->
-                            <br/><span class="me-1 h3 mb-0" style="white-space: nowrap;font-size: 1rem; font-weight: 700;">Price per Squaremetere:  <t t-esc="combination_info['price_per_sqm'] * 1.2" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/></span>
+                            <div style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
+                                Price per Squaremetere:
+                                <t t-esc="combination_info['price_per_sqm'] * 1.2" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            </div>
                         </t>
-                    </span>
+                    </div>
                 </t>
-<!--                <t t-else="">-->
-<!--                    &lt;!&ndash; Original price block (you may need to adjust this according to your original template) &ndash;&gt;-->
-<!--                    <span class="h3 mb-0 oe_currency_value"><t t-esc="product.list_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/></span>-->
-<!--                </t>-->
+                <t t-else="">
+				<div class="o_wsale_product_sub d-flex justify-content-between align-items-end gap-2 flex-wrap pb-1">
+                    <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+                    <div class="o_wsale_product_btn"/>
+                    <div class="product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                        <t t-if="'base_price' in template_price_vals and (template_price_vals['base_price'] &gt; template_price_vals['price_reduce']) and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
+                            <del t-attf-class="text-muted me-1 h6 mb-0" style="white-space: nowrap;">
+                                <em class="small" t-esc="template_price_vals['base_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            </del>
+                        </t>
+                        <span class="h6 mb-0" t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale" t-esc="template_price_vals['price_reduce']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span class="h6 mb-0" t-else="" t-field="website.prevent_zero_price_sale_text"/>
+                        <span itemprop="price" style="display:none;" t-esc="template_price_vals['price_reduce']"/>
+                        <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
+                    </div>
+                </div>
+
+                </t>
             </xpath>
         </template>
 
