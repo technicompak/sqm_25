@@ -1,39 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
-
         <record model="ir.ui.view" id="product_template_sqmeter_tree_view">
-        <field name="name">product.template.sqmeter.tree.view</field>
-        <field name="model">product.template</field>
-        <field name="inherit_id" ref="product.product_template_tree_view"/>
-        <field name="arch" type="xml">
-            <field name="name" position="after">
-                <field name="id"/>
-<!--                <field name="price_per_sqm"/>-->
-<!--                <field name="display_sqm"/>-->
+            <field name="name">product.template.sqmeter.tree.view</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_tree_view"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="id"/>
+                </field>
             </field>
-        </field>
-    </record>
+        </record>
 
         <record model="ir.ui.view" id="product_template_pricelist_item_sqmeter_tree_view">
-        <field name="name">product.pricelist.item.sqmeter.tree.view</field>
-        <field name="model">product.pricelist.item</field>
-        <field name="inherit_id" ref="product.product_pricelist_item_tree_view_from_product"/>
-        <field name="arch" type="xml">
-            <field name="product_id" position="after">
-                <field name="price_per_sqm"/>
+            <field name="name">product.pricelist.item.sqmeter.tree.view</field>
+            <field name="model">product.pricelist.item</field>
+            <field name="inherit_id" ref="product.product_pricelist_item_tree_view_from_product"/>
+            <field name="arch" type="xml">
+                <field name="product_id" position="after">
+                    <field name="price_per_sqm"/>
+                </field>
             </field>
-        </field>
-    </record>
+        </record>
 
-
-        <!-- Extend the product.template form view -->
         <record id="product_attribute_form_view_inherit" model="ir.ui.view">
             <field name="name">product.attribute.form.inherit.price.per.sqm</field>
             <field name="model">product.attribute</field>
             <field name="inherit_id" ref="product.product_attribute_view_form"/>
             <field name="arch" type="xml">
-                <!-- Locate the tree view for attribute_line_ids and extend it -->
                 <xpath expr="//field[@name='visibility']" position="after">
                     <field name="is_sqm"/>
                 </xpath>
@@ -49,8 +43,6 @@
             <field name="inherit_id" ref="product.product_template_only_form_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='taxes_id']" position="after">
-                    <!--                    <label for="price_per_sqm"/>-->
-<!--                    <field name="price_per_sqm"/>-->
                     <field name="display_sqm"/>
                 </xpath>
             </field>
@@ -67,53 +59,39 @@
             </field>
         </record>
 
-        <!-- Inherit the website_sale.products_item template -->
-	<template id="product_price_inherit_price_per_sqm" inherit_id="website_sale.product_price">
-	    <xpath expr="//span[contains(@class, 'oe_price')]" position="after">
-	        <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
-	        <t t-if="display_sqm">
-	            <div style="width: 100%; display: block; margin-top: 10px; clear: both;">
-	                <t t-set="combination_info" t-value="product._get_combination_info()"/>
-	                <div style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
-	                    Price per Squaremetere:
-	                    <t t-esc="combination_info.get('price_per_sqm', 0.0)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-	                </div>
-	            </div>
-	        </t>
-	    </xpath>
-	</template>
-
-        <!-- Inherit the product_price template -->
-	<template id="products_inherit_price_per_sqm" inherit_id="website_sale.products_item">
-	    <xpath expr="//div[contains(@class, 'product_price')]" position="replace">
-	        <div class="product_price" t-if="product._is_add_to_cart_possible()">
-	            <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
-	            <t t-if="display_sqm">
-	                <t t-set="combination_info" t-value="product._get_combination_info()"/>
-	                <t t-set="min_price_sqm" t-value="min([v.price_per_sqm for v in product.product_variant_ids if v.price_per_sqm > 0] or [0])"/>
-	                <t t-if="min_price_sqm">
-	                    <span class="h6 mb-0" style="white-space: nowrap;">from 
-	                        <t t-esc="min_price_sqm" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²
-	                    </span>
-	                </t>
-	            </t>
-	            <t t-else="">
-				<div class="o_wsale_product_sub d-flex justify-content-between align-items-end gap-2 flex-wrap pb-1">
-                    <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
-                    <div class="o_wsale_product_btn"/>
-                    <div class="product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
-                        <t t-if="'base_price' in template_price_vals and (template_price_vals['base_price'] &gt; template_price_vals['price_reduce']) and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
-                            <del t-attf-class="text-muted me-1 h6 mb-0" style="white-space: nowrap;">
-                                <em class="small" t-esc="template_price_vals['base_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                            </del>
+        <template id="products_inherit_price_per_sqm" inherit_id="website_sale.products_item">
+            <xpath expr="//div[contains(@class, 'product_price')]" position="replace">
+                <div class="product_price" t-if="product._is_add_to_cart_possible()">
+                    <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
+                    <t t-if="display_sqm">
+                        <t t-set="combination_info" t-value="product._get_combination_info()"/>
+                        <t t-set="min_price_sqm" t-value="min([v.price_per_sqm for v in product.product_variant_ids if v.price_per_sqm > 0] or [0])"/>
+                        <t t-if="min_price_sqm">
+                            <span class="h6 mb-0" style="white-space: nowrap;">from 
+                                <t t-esc="min_price_sqm" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²
+                            </span>
                         </t>
-                        <span class="h6 mb-0" t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale" t-esc="template_price_vals['price_reduce']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        <span class="h6 mb-0" t-else="" t-field="website.prevent_zero_price_sale_text"/>
-                        <span itemprop="price" style="display:none;" t-esc="template_price_vals['price_reduce']"/>
-                        <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
-                    </div>
+                    </t>
+                    <t t-else="">
+                        <div class="product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                            <span t-esc="product.list_price" class="h6 mb-0" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </div>
+                    </t>
                 </div>
+            </xpath>
+        </template>
 
+        <template id="product_price_inherit_price_per_sqm" inherit_id="website_sale.product_price">
+            <xpath expr="//span[contains(@class, 'oe_price')]" position="after">
+                <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
+                <t t-if="display_sqm">
+                    <div style="width: 100%; display: block; margin-top: 10px; clear: both;">
+                        <t t-set="combination_info" t-value="product._get_combination_info()"/>
+                        <div style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
+                            Price per Squaremetere:
+                            <t t-esc="combination_info.get('price_per_sqm', 0.0)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </div>
+                    </div>
                 </t>
             </xpath>
         </template>
