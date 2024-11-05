@@ -36,7 +36,7 @@ publicWidget.registry.WebsiteSale.include({
         var $optional_price = $parent.find(".oe_optional:first .oe_currency_value");
         $price.text(self._priceToStr(combination.list_price));
         /**
-        * Hard Coded - 1,2 für die MwSt.
+        * Hard Coded - 1,2 für die MwSt.wieder raus.
         */
         if (combination.price_per_sqm !== undefined && $minPriceSqmElement.length) {
             $minPriceSqmElement.text(self._priceToStr(combination.price_per_sqm));
