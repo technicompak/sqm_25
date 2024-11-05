@@ -89,21 +89,22 @@
                 </div>
             </xpath>
         </template>
-
-        <template id="product_price_inherit_price_per_sqm" inherit_id="website_sale.product_price">
-            <xpath expr="//span[contains(@class, 'oe_price')]" position="after">
-                <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
-                <t t-if="display_sqm">
-                    <div style="width: 100%; display: block; margin-top: 10px; clear: both;">
-                        <t t-set="combination_info" t-value="product._get_combination_info()"/>
-                        <div style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
-                            Price per Squaremetere:
-                            <t t-esc="combination_info.get('price_per_sqm', 0.0)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        </div>
-                    </div>
-                </t>
-            </xpath>
-        </template>
+    
+    <template id="products_inherit_price_per_sqm" inherit_id="website_sale.products_item">
+        <xpath expr="//div[contains(@class, 'product_price')]" position="replace">
+            <div class="product_price" t-if="product._is_add_to_cart_possible()">
+                <!-- Regular price -->
+                <div class="oe_price">
+                    <span class="oe_currency_value" t-esc="combination_info.get('price')" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                </div>
+                
+                <!-- Price per square meter -->
+                <div class="price_per_sqm" t-att-class="{'d-none': not combination_info.get('price_per_sqm')}">
+                    <span class="oe_currency_value" t-esc="combination_info.get('price_per_sqm')" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²
+                </div>
+            </div>
+        </xpath>
+    </template>
 
     </data>
 </odoo>
