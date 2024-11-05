@@ -3,6 +3,8 @@ from odoo import api, fields, models
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
+    display_sqm = fields.Boolean(string='Display Square Meter Price')
+
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, parent_combination=False, only_template=False):
         """Inherit to add price_per_sqm to the combination info"""
         combination_info = super()._get_combination_info(
@@ -24,6 +26,7 @@ class ProductProduct(models.Model):
     _inherit = 'product.product'
 
     price_per_sqm = fields.Float(string='Price per Squaremeter', compute='_compute_price_per_sqm')
+    display_sqm = fields.Boolean(related='product_tmpl_id.display_sqm')
 
     def _compute_price_per_sqm(self):
         """Compute the price per square meter including proper tax calculation"""
@@ -62,3 +65,25 @@ class ProductAttributeValue(models.Model):
     _inherit = 'product.attribute.value'
 
     sqm = fields.Float(string='Square Meter')
+
+
+class PricelistItem(models.Model):
+    _inherit = 'product.pricelist.item'
+
+    price_per_sqm = fields.Float(
+        string='Price per Squaremeter', 
+        related='product_id.price_per_sqm', 
+        readonly=True
+    )
+
+
+class Pricelist(models.Model):
+    _inherit = 'product.pricelist'
+
+    def _compute_price_rule(self, products, quantity, **kwargs):
+        """Inherit to handle price per square meter in pricelist rules"""
+        results = super()._compute_price_rule(products, quantity, **kwargs)
+        
+        # The price calculation is now handled in _compute_price_per_sqm
+        # through the combination_info mechanism
+        return results
