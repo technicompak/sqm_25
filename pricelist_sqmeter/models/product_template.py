@@ -8,21 +8,24 @@ class ProductTemplate(models.Model):
 
     display_sqm = fields.Boolean(string='Display Square Meter Price')
 
-    def _get_combination_info(self, combination=False, product_id=False, add_qty=1, parent_combination=False, only_template=False):
-        """Inherit to add price_per_sqm to the combination info"""
-        combination_info = super()._get_combination_info(
-            combination=combination,
-            product_id=product_id,
-            add_qty=add_qty,
-            parent_combination=parent_combination,
-            only_template=only_template
-        )
+def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
+    combination_info = super()._get_combination_info(
+        combination=combination,
+        product_id=product_id,
+        add_qty=add_qty,
+        pricelist=pricelist,
+        parent_combination=parent_combination,
+        only_template=only_template
+    )
 
-        if product_id:
-            product = self.env['product.product'].browse(product_id)
-            combination_info['price_per_sqm'] = product.price_per_sqm
-        
-        return combination_info
+    if product_id:
+        product = self.env['product.product'].browse(product_id)
+        combination_info['price_per_sqm'] = product.price_per_sqm
+    else:
+        # Get the first variant or a default value
+        combination_info['price_per_sqm'] = self.product_variant_ids[:1].price_per_sqm if self.product_variant_ids else 0.0
+
+    return combination_info
 
 
 class ProductProduct(models.Model):
