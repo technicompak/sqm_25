@@ -3,52 +3,32 @@
 import VariantMixin from "@website_sale/js/sale_variant_mixin";
 import publicWidget from "@web/legacy/js/public/public_widget";
 import { renderToFragment } from "@web/core/utils/render";
-
 import "@website_sale/js/website_sale";
-
 import { markup } from "@odoo/owl";
 
-/**
- * Addition to the variant_mixin._onChangeCombination
- *
- * This will prevent the user from selecting a quantity that is not available in the
- * stock for that product.
- *
- * It will also display various info/warning messages regarding the select product's stock.
- *
- * This behavior is only applied for the web shop (and not on the SO form)
- * and only for the main product.
- *
- * @param {MouseEvent} ev
- * @param {$.Element} $parent
- * @param {Array} combination
- */
-
 publicWidget.registry.WebsiteSale.include({
-
     _onChangeCombination: function (ev, $parent, combination) {
         this._super.apply(this, arguments);
         var self = this;
-        console.log("TABISH")
+        
+        // Get price elements
         var $price = $parent.find(".oe_price:first .oe_currency_value");
-        var $minPriceSqmElement = $parent.find(".oe_price_new .oe_currency_value");
+        var $sqmPriceElement = $parent.find(".price_per_sqm .oe_currency_value");
         var $default_price = $parent.find(".oe_default_price:first .oe_currency_value");
         var $optional_price = $parent.find(".oe_optional:first .oe_currency_value");
-        $price.text(self._priceToStr(combination.list_price));
-        /**
-        * Hard Coded - 1,2 für die MwSt.wieder raus.
-        */
-        if (combination.price_per_sqm !== undefined && $minPriceSqmElement.length) {
-            $minPriceSqmElement.text(self._priceToStr(combination.price_per_sqm));
+        
+        // Update regular price
+        $price.text(self._priceToStr(combination.price));
+        
+        // Update price per square meter if it exists in the combination info
+        if (combination.price_per_sqm !== undefined && $sqmPriceElement.length) {
+            $sqmPriceElement.text(self._priceToStr(combination.price_per_sqm));
+            $sqmPriceElement.closest('.price_per_sqm').removeClass('d-none');
+        } else {
+            $sqmPriceElement.closest('.price_per_sqm').addClass('d-none');
         }
-        $default_price.text(self._priceToStr(combination.list_price));
-        console.log(combination)
-        var isCombinationPossible = true;
-        if (typeof combination.is_combination_possible !== "undefined") {
-            isCombinationPossible = combination.is_combination_possible;
-        }
-        this._toggleDisable($parent, isCombinationPossible);
 
+        // Handle discounted prices
         if (combination.has_discounted_price && !combination.compare_list_price) {
             $default_price
                 .closest('.oe_website_sale')
@@ -66,29 +46,12 @@ publicWidget.registry.WebsiteSale.include({
             $default_price.parent().addClass('d-none');
         }
 
-        var rootComponentSelectors = [
-            'tr.js_product',
-            '.oe_website_sale',
-            '.o_product_configurator'
-        ];
-
-        // update images only when changing product
-        // or when either ids are 'false', meaning dynamic products.
-        // Dynamic products don't have images BUT they may have invalid
-        // combinations that need to disable the image.
-        if (!combination.product_id ||
-            !this.last_product_id ||
-            combination.product_id !== this.last_product_id) {
-            this.last_product_id = combination.product_id;
-            self._updateProductImage(
-                $parent.closest(rootComponentSelectors.join(', ')),
-                combination.display_image,
-                combination.product_id,
-                combination.product_template_id,
-                combination.carousel,
-                isCombinationPossible
-            );
+        // Rest of your existing code...
+        var isCombinationPossible = true;
+        if (typeof combination.is_combination_possible !== "undefined") {
+            isCombinationPossible = combination.is_combination_possible;
         }
+        this._toggleDisable($parent, isCombinationPossible);
 
         $parent
             .find('.product_id')
@@ -107,14 +70,8 @@ publicWidget.registry.WebsiteSale.include({
             .text(combination.price_per_sqm)
             .trigger('change');
 
-        $parent
-            .find('.o_product_tags')
-            .first()
-            .html(combination.product_tags);
-
         this.handleCustomValues($(ev.target));
     },
-
 });
 
 export default VariantMixin;
