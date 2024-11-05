@@ -38,7 +38,9 @@ publicWidget.registry.WebsiteSale.include({
         /**
         * Hard Coded - 1,2 für die MwSt.
         */
-        $minPriceSqmElement.text(self._priceToStr((combination.price_per_sqm || 0) * 1.2));
+        if (combination.price_per_sqm !== undefined && $minPriceSqmElement.length) {
+            $minPriceSqmElement.text(self._priceToStr(combination.price_per_sqm));
+        }
         $default_price.text(self._priceToStr(combination.list_price));
         console.log(combination)
         var isCombinationPossible = true;
