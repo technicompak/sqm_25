@@ -141,13 +141,28 @@ class ProductProduct(models.Model):
                     sqm = record.product_attribute_value_id.sqm
                     break
             if sqm:
-                # Get price with taxes included
-                price = item.price_compute('total_included')[item.id]
+        # Get base price
                 pricelist_price = self.env['product.pricelist.item'].search([('product_id', '=', item.id)],limit=1).fixed_price
                 if pricelist_price:
-                    price = pricelist_price
+                    base_price = pricelist_price
+                else:
+        # Use list_price instead of price_compute
+                    base_price = item.list_price
                 
-                item.price_per_sqm = price / sqm if sqm else 0
+        # Calculate price per sqm
+                base_price_per_sqm = base_price / sqm if sqm else 0
+                
+        # Apply taxes
+                taxes = item.taxes_id
+                if taxes:
+                    tax_results = taxes._compute_taxes([{
+                        'price_unit': base_price_per_sqm,
+                        'quantity': 1.0,
+                        'product_id': item.id,
+                    }])
+                    item.price_per_sqm = tax_results['total_included']
+                else:
+                    item.price_per_sqm = base_price_per_sqm
             else:
                 item.price_per_sqm = 0
 
