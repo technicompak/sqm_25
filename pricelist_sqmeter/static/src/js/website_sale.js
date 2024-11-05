@@ -26,29 +26,28 @@ import { markup } from "@odoo/owl";
 
 publicWidget.registry.WebsiteSale.include({
 
-    _onChangeCombination: function (ev, $parent, combination) {
-        this._super.apply(this, arguments);
-        var self = this;
-        console.log("TABISH")
-        var $price = $parent.find(".oe_price:first .oe_currency_value");
-        var $minPriceSqmElement = $parent.find(".oe_price_new .oe_currency_value");
-        var $default_price = $parent.find(".oe_default_price:first .oe_currency_value");
-        var $optional_price = $parent.find(".oe_optional:first .oe_currency_value");
+        _onChangeCombination: function (ev, $parent, combination) {
+            this._super.apply(this, arguments);
+            var self = this;
+            
+            // Main price update
+            var $price = $parent.find(".oe_price .oe_currency_value").first();
+            var $default_price = $parent.find(".oe_default_price .oe_currency_value").first();
+            
+            $price.text(self._priceToStr(combination.list_price));
+            $default_price.text(self._priceToStr(combination.list_price));
         
-        $price.text(self._priceToStr(combination.list_price));
-        $minPriceSqmElement.text(self._priceToStr(combination.price_per_sqm || 0));
-        $default_price.text(self._priceToStr(combination.list_price));
-        
-        // Update price per square meter
-        var $pricePerSqm = $parent.find(".price_per_sqm .oe_currency_value");
-        if ($pricePerSqm.length && combination.price_per_sqm !== undefined) {
-            $pricePerSqm.text(self._priceToStr(combination.price_per_sqm));
-        }
-        
-        console.log(combination)
-        var isCombinationPossible = true;
-        if (typeof combination.is_combination_possible !== "undefined") {
-            isCombinationPossible = combination.is_combination_possible;
+            // Price per square meter update - using exact structure
+            var $pricePerSqm = $parent.find("div[style*='font-size: 1rem'] > .oe_currency_value");
+            if ($pricePerSqm.length && combination.price_per_sqm !== undefined) {
+                console.log("Updating price per sqm to:", combination.price_per_sqm);
+                $pricePerSqm.text(self._priceToStr(combination.price_per_sqm));
+            }
+                
+            console.log(combination)
+            var isCombinationPossible = true;
+            if (typeof combination.is_combination_possible !== "undefined") {
+                isCombinationPossible = combination.is_combination_possible;
         }
         this._toggleDisable($parent, isCombinationPossible);
 
