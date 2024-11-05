@@ -1,4 +1,7 @@
+import logging
 from odoo import api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -21,6 +24,7 @@ class ProductTemplate(models.Model):
         
         return combination_info
 
+
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
@@ -31,7 +35,6 @@ class ProductProduct(models.Model):
     def _compute_price_per_sqm(self):
         for item in self:
             sqm = 0
-            # Debug log
             _logger.info(f'Computing price_per_sqm for product {item.name}')
             
             for record in item.product_template_attribute_value_ids:
@@ -101,7 +104,4 @@ class Pricelist(models.Model):
     def _compute_price_rule(self, products, quantity, **kwargs):
         """Inherit to handle price per square meter in pricelist rules"""
         results = super()._compute_price_rule(products, quantity, **kwargs)
-        
-        # The price calculation is now handled in _compute_price_per_sqm
-        # through the combination_info mechanism
         return results
