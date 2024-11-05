@@ -136,18 +136,18 @@ class ProductProduct(models.Model):
     def _compute_price_per_sqm(self):
         for item in self:
             sqm = 0
-            # sqm = item.product_tmpl_id.attribute_line_ids.mapped('sqm')
-            # sqm = item.product_template_attribute_value_ids[0].product_attribute_value_id.sqm
             for record in item.product_template_attribute_value_ids:
                 if record.product_attribute_value_id.attribute_id.is_sqm:
                     sqm = record.product_attribute_value_id.sqm
                     break
             if sqm:
+                # Get price with taxes included
+                price = item.price_compute('total_included')[item.id]
                 pricelist_price = self.env['product.pricelist.item'].search([('product_id', '=', item.id)],limit=1).fixed_price
                 if pricelist_price:
-                    item.price_per_sqm = pricelist_price / sqm if sqm else 0
-                else:
-                    item.price_per_sqm = item.lst_price / sqm if sqm else 0
+                    price = pricelist_price
+                
+                item.price_per_sqm = price / sqm if sqm else 0
             else:
                 item.price_per_sqm = 0
 
