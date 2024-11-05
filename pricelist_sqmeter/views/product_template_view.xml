@@ -62,28 +62,21 @@
         <template id="products_inherit_price_per_sqm" inherit_id="website_sale.products_item">
             <xpath expr="//div[contains(@class, 'product_price')]" position="replace">
                 <div class="product_price" t-if="product._is_add_to_cart_possible()">
+                    <!-- Get combination info first -->
+                    <t t-set="combination_info" t-value="product._get_combination_info()"/>
+                    
+                    <!-- Regular price -->
+                    <div class="oe_price">
+                        <span class="oe_currency_value" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    </div>
+                    
+                    <!-- Price per square meter -->
                     <t t-set="variants_sqm_prices" t-value="[v.price_per_sqm for v in product.product_variant_ids if v.price_per_sqm > 0]"/>
                     <t t-if="variants_sqm_prices">
-                        <div class="d-flex flex-column">
-                            <!-- Show price range if multiple variants -->
-                            <t t-if="len(variants_sqm_prices) > 1">
-                                <span class="h6 mb-0" style="white-space: nowrap;">
-                                    from <t t-esc="min(variants_sqm_prices)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²
-                                    to <t t-esc="max(variants_sqm_prices)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²
-                                </span>
-                            </t>
-                            <!-- Show single price if only one variant -->
-                            <t t-else="">
-                                <span class="h6 mb-0" style="white-space: nowrap;">
-                                    <t t-esc="variants_sqm_prices[0]" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²
-                                </span>
-                            </t>
-                        </div>
-                    </t>
-                    <t t-else="">
-                        <!-- Regular price if no sqm prices -->
-                        <div class="product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
-                            <span t-esc="product.list_price" class="h6 mb-0" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <div class="price_per_sqm">
+                            <span class="small text-muted">
+                                from <t t-esc="min(variants_sqm_prices)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²
+                            </span>
                         </div>
                     </t>
                 </div>
