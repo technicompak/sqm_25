@@ -68,45 +68,36 @@
         </record>
 
         <!-- Inherit the website_sale.products_item template -->
-        <template id="products_inherit_price_per_sqm" inherit_id="website_sale.products_item">
-    <xpath expr="//div[contains(@class, 'product_price')]" position="replace">
-        <div class="product_price">
-            <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
-            <t t-if="display_sqm">
-                <t t-set="min_price_sqm" t-value="min([v.price_per_sqm for v in product.product_variant_ids if v.price_per_sqm > 0] or [product.list_price])"/>
-                <t t-if="min_price_sqm">
-                          <!-- hier wird die mwst einfach hart reingecoded -->
-                    <span class="h6 mb-0" style="white-space: nowrap;">from <t t-esc="min_price_sqm * 1.2" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²</span>
-                </t>
-            </t>
-            <t t-else="">
-                <span class="h6 mb-0 oe_currency_value"><t t-esc="product.list_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/></span>
-            </t>
-        </div>
-    </xpath>
-</template>
+	<template id="product_price_inherit_price_per_sqm" inherit_id="website_sale.product_price">
+	    <xpath expr="//span[contains(@class, 'oe_price')]" position="after">
+	        <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
+	        <t t-if="display_sqm">
+	            <div style="width: 100%; display: block; margin-top: 10px; clear: both;">
+	                <t t-set="combination_info" t-value="product._get_combination_info()"/>
+	                <div style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
+	                    Price per Squaremetere:
+	                    <t t-esc="combination_info.get('price_per_sqm', 0.0)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+	                </div>
+	            </div>
+	        </t>
+	    </xpath>
+	</template>
 
         <!-- Inherit the product_price template -->
-        <template id="product_price_inherit_price_per_sqm" inherit_id="website_sale.product_price">
-            <xpath expr="//span[contains(@class, 'oe_price')]" position="after">
-                <!-- Determine if display_sqm should be true -->
-                <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
-                <t t-if="display_sqm">
-                    <!-- Container for the new price per square meter display -->
-                    <!-- Create a completely separate block container for the price per square meter -->
-                    <div style="width: 100%; display: block; margin-top: 10px; clear: both;"> <!-- Ensure it takes the full width -->
-                      <!-- Fetch the minimum price_per_sqm from the product variants -->
-                        <t t-set="min_price_sqm" t-value="min([v.price_per_sqm for v in product.product_variant_ids if v.price_per_sqm > 0] or [product.list_price])"/>
-                        <t t-if="min_price_sqm">
-                                                    <!-- Und auch hier wieder hard die 20% mwst -->
-                            <div style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
-                                Price per Squaremetere:
-                                <t t-esc="combination_info['price_per_sqm'] * 1.2" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                            </div>
-                        </t>
-                    </div>
-                </t>
-                <t t-else="">
+	<template id="products_inherit_price_per_sqm" inherit_id="website_sale.products_item">
+	    <xpath expr="//div[contains(@class, 'product_price')]" position="replace">
+	        <div class="product_price" t-if="product._is_add_to_cart_possible()">
+	            <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
+	            <t t-if="display_sqm">
+	                <t t-set="combination_info" t-value="product._get_combination_info()"/>
+	                <t t-set="min_price_sqm" t-value="min([v.price_per_sqm for v in product.product_variant_ids if v.price_per_sqm > 0] or [0])"/>
+	                <t t-if="min_price_sqm">
+	                    <span class="h6 mb-0" style="white-space: nowrap;">from 
+	                        <t t-esc="min_price_sqm" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²
+	                    </span>
+	                </t>
+	            </t>
+	            <t t-else="">
 				<div class="o_wsale_product_sub d-flex justify-content-between align-items-end gap-2 flex-wrap pb-1">
                     <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
                     <div class="o_wsale_product_btn"/>
