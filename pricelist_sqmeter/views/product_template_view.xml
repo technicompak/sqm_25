@@ -88,7 +88,7 @@
             <div style="width: 100%; display: block; margin-top: 10px; clear: both;">
                 <div class="price_per_sqm_value" style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
                     Price per Squaremetere:
-                    <span class="oe_currency_value" t-esc="combination_info['price_per_sqm']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span class="oe_currency_value" t-esc="combination_info.get('price_per_sqm', 0.0)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
                     <span class="ms-1">€/m²</span>
                 </div>
             </div>
