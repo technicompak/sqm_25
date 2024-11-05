@@ -80,7 +80,7 @@
                 </div>
             </xpath>
         </template>
-
+        
         <template id="product_price_inherit_price_per_sqm" inherit_id="website_sale.product_price">
             <xpath expr="//span[contains(@class, 'oe_price')]" position="after">
                 <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
@@ -88,7 +88,8 @@
                     <div style="width: 100%; display: block; margin-top: 10px; clear: both;">
                         <div class="price_per_sqm_value" style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
                             Price per Squaremetere:
-                            <span class="oe_currency_value" t-esc="combination_info.get('price_per_sqm', 0.0)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>&nbsp;€/m²
+                            <span class="oe_currency_value" t-esc="combination_info.get('price_per_sqm', 0.0)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            <span class="ms-1">€/m²</span>
                         </div>
                     </div>
                 </t>
