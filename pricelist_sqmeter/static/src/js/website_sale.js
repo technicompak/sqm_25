@@ -38,7 +38,8 @@ publicWidget.registry.WebsiteSale.include({
             $default_price.text(self._priceToStr(combination.list_price));
         
             // Price per square meter update - using exact structure
-            var $pricePerSqm = $parent.find("div[style*='font-size: 1rem'] > .oe_currency_value");
+            var $pricePerSqm = $parent.find(".price_per_sqm_value > .oe_currency_value");
+            
             if ($pricePerSqm.length && combination.price_per_sqm !== undefined) {
                 console.log("Updating price per sqm to:", combination.price_per_sqm);
                 $pricePerSqm.text(self._priceToStr(combination.price_per_sqm));
