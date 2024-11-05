@@ -86,10 +86,9 @@
                 <t t-set="display_sqm" t-value="any([v.display_sqm for v in product.product_variant_ids])"/>
                 <t t-if="display_sqm">
                     <div style="width: 100%; display: block; margin-top: 10px; clear: both;">
-                        <t t-set="combination_info" t-value="product._get_combination_info()"/>
-                        <div style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
+                        <div class="price_per_sqm_value" style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
                             Price per Squaremetere:
-                            <t t-esc="combination_info.get('price_per_sqm', 0.0)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            <span class="oe_currency_value" t-esc="combination_info.get('price_per_sqm', 0.0)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>&nbsp;€/m²
                         </div>
                     </div>
                 </t>
