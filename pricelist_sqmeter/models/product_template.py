@@ -8,25 +8,52 @@ class ProductTemplate(models.Model):
 
     display_sqm = fields.Boolean(string='Display Square Meter Price')
 
-    def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
+    def _get_combination_info(self, combination=False, product_id=False, add_qty=1, parent_combination=False, only_template=False):
         combination_info = super()._get_combination_info(
             combination=combination,
             product_id=product_id,
             add_qty=add_qty,
-            pricelist=pricelist,
             parent_combination=parent_combination,
             only_template=only_template
         )
 
+        # Get the current website and its pricelist
+        website = self.env['website'].get_current_website()
+        pricelist = website.pricelist_id
+
         if product_id:
             product = self.env['product.product'].browse(product_id)
-            combination_info['price_per_sqm'] = product.price_per_sqm
+            price = product.list_price
+            
+            # Apply pricelist if available
+            if pricelist:
+                price = pricelist._get_product_price(product, 1.0, currency=website.currency_id)
+            
+            # Get taxes
+            taxes = product.taxes_id.filtered(lambda t: t.company_id == self.env.company)
+            if taxes:
+                fpos = website.fiscal_position_id
+                if fpos:
+                    taxes = fpos.map_tax(taxes)
+                price = taxes.compute_all(price, website.currency_id, 1.0, product)['total_included']
+
+            # Calculate price per sqm
+            sqm = 0
+            for record in product.product_template_attribute_value_ids:
+                if record.product_attribute_value_id.attribute_id.is_sqm:
+                    sqm = record.product_attribute_value_id.sqm
+                    break
+            
+            combination_info['price_per_sqm'] = price / sqm if sqm else 0
         else:
-            # Get the first variant or a default value
-            combination_info['price_per_sqm'] = self.product_variant_ids[:1].price_per_sqm if self.product_variant_ids else 0.0
+            # Get the first variant's price per sqm
+            first_variant = self.product_variant_ids[:1]
+            if first_variant:
+                combination_info['price_per_sqm'] = first_variant.price_per_sqm
+            else:
+                combination_info['price_per_sqm'] = 0.0
 
         return combination_info
-
 
 class ProductProduct(models.Model):
     _inherit = 'product.product'
