@@ -1,109 +1,102 @@
-import logging
-from odoo import api, fields, models
+odoo.define('@pricelist_sqmeter/js/website_sale', ['@website_sale/js/sale_variant_mixin', '@web/legacy/js/public/public_widget', '@web/core/utils/render', '@website_sale/js/website_sale', '@odoo/owl'], function (require) {
+    'use strict';
+    let __exports = {};
 
-_logger = logging.getLogger(__name__)
+    const VariantMixin = require("@website_sale/js/sale_variant_mixin")[Symbol.for("default")];
+    const publicWidget = require("@web/legacy/js/public/public_widget")[Symbol.for("default")];
+    const { renderToFragment } = require("@web/core/utils/render");
+    require("@website_sale/js/website_sale");
+    const { markup } = require("@odoo/owl");
 
-class ProductTemplate(models.Model):
-    _inherit = 'product.template'
-
-    display_sqm = fields.Boolean(string='Display Square Meter Price')
-
-    def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
-        combination_info = super()._get_combination_info(
-            combination=combination,
-            product_id=product_id,
-            add_qty=add_qty,
-            pricelist=pricelist,
-            parent_combination=parent_combination,
-            only_template=only_template
-        )
-
-        if product_id:
-            product = self.env['product.product'].browse(product_id)
-            combination_info['price_per_sqm'] = product.price_per_sqm
-        else:
-            combination_info['price_per_sqm'] = self.product_variant_ids[:1].price_per_sqm if self.product_variant_ids else 0.0
-
-        return combination_info
-
-
-class ProductProduct(models.Model):
-    _inherit = 'product.product'
-
-    price_per_sqm = fields.Float(string='Price per Squaremeter', compute='_compute_price_per_sqm')
-    display_sqm = fields.Boolean(related='product_tmpl_id.display_sqm')
-
-    @api.depends('list_price', 'product_template_attribute_value_ids')
-    def _compute_price_per_sqm(self):
-        for item in self:
-            sqm = 0
-            _logger.info(f'Computing price_per_sqm for product {item.name}')
+    publicWidget.registry.WebsiteSale.include({
+        _onChangeCombination: function (ev, $parent, combination) {
+            this._super.apply(this, arguments);
+            var self = this;
             
-            for record in item.product_template_attribute_value_ids:
-                _logger.info(f'Checking attribute: {record.attribute_id.name}, is_sqm: {record.attribute_id.is_sqm}')
-                if record.product_attribute_value_id.attribute_id.is_sqm:
-                    sqm = record.product_attribute_value_id.sqm
-                    _logger.info(f'Found sqm value: {sqm}')
-                    break
+            console.log("Combination data:", combination);
             
-            if sqm:
-                # Get the price directly from the product first
-                price = item.list_price
-                _logger.info(f'Initial price: {price}')
-                
-                # Get website
-                website = self.env['website'].get_current_website()
-                
-                # Get the pricelist
-                pricelist = website.pricelist_id
-                if pricelist:
-                    price = pricelist._get_product_price(item, 1.0, currency=website.currency_id)
-                    _logger.info(f'Price after pricelist: {price}')
-                
-                # Get taxes
-                taxes = item.taxes_id.filtered(lambda t: t.company_id == self.env.company)
-                if taxes:
-                    fpos = website.fiscal_position_id
-                    if fpos:
-                        taxes = fpos.map_tax(taxes)
-                    price_taxed = taxes.compute_all(price, website.currency_id, 1.0, item)['total_included']
-                    _logger.info(f'Price after taxes: {price_taxed}')
-                    price = price_taxed
-                
-                # Calculate price per sqm
-                item.price_per_sqm = price / sqm if sqm else 0
-                _logger.info(f'Final price_per_sqm: {item.price_per_sqm}')
-            else:
-                item.price_per_sqm = 0
-                _logger.info('No sqm value found, setting price_per_sqm to 0')
+            var $price = $parent.find(".oe_price:first .oe_currency_value");
+            var $default_price = $parent.find(".oe_default_price:first .oe_currency_value");
+            var $optional_price = $parent.find(".oe_optional:first .oe_currency_value");
+            
+            $price.text(self._priceToStr(combination.list_price));
+            $default_price.text(self._priceToStr(combination.list_price));
 
+            // Price per square meter update
+            var $pricePerSqm = $parent.find("div[style*='font-size: 1rem'] > .oe_currency_value");
+            if ($pricePerSqm.length && combination.price_per_sqm !== undefined) {
+                $pricePerSqm.text(self._priceToStr(combination.price_per_sqm));
+            }
 
-class ProductAttribute(models.Model):
-    _inherit = 'product.attribute'
+            var isCombinationPossible = true;
+            if (typeof combination.is_combination_possible !== "undefined") {
+                isCombinationPossible = combination.is_combination_possible;
+            }
+            this._toggleDisable($parent, isCombinationPossible);
 
-    is_sqm = fields.Boolean(string='Is Square Meter')
+            if (combination.has_discounted_price && !combination.compare_list_price) {
+                $default_price
+                    .closest('.oe_website_sale')
+                    .addClass("discount");
+                $optional_price
+                    .closest('.oe_optional')
+                    .removeClass('d-none')
+                    .css('text-decoration', 'line-through');
+                $default_price.parent().removeClass('d-none');
+            } else {
+                $default_price
+                    .closest('.oe_website_sale')
+                    .removeClass("discount");
+                $optional_price.closest('.oe_optional').addClass('d-none');
+                $default_price.parent().addClass('d-none');
+            }
 
+            var rootComponentSelectors = [
+                'tr.js_product',
+                '.oe_website_sale',
+                '.o_product_configurator'
+            ];
 
-class ProductAttributeValue(models.Model):
-    _inherit = 'product.attribute.value'
+            if (!combination.product_id ||
+                !this.last_product_id ||
+                combination.product_id !== this.last_product_id) {
+                this.last_product_id = combination.product_id;
+                self._updateProductImage(
+                    $parent.closest(rootComponentSelectors.join(', ')),
+                    combination.display_image,
+                    combination.product_id,
+                    combination.product_template_id,
+                    combination.carousel,
+                    isCombinationPossible
+                );
+            }
 
-    sqm = fields.Float(string='Square Meter')
+            $parent
+                .find('.product_id')
+                .first()
+                .val(combination.product_id || 0)
+                .trigger('change');
 
+            $parent
+                .find('.product_display_name')
+                .first()
+                .text(combination.display_name);
 
-class PricelistItem(models.Model):
-    _inherit = 'product.pricelist.item'
+            $parent
+                .find('.js_raw_price')
+                .first()
+                .text(combination.price_per_sqm)
+                .trigger('change');
 
-    price_per_sqm = fields.Float(
-        string='Price per Squaremeter', 
-        related='product_id.price_per_sqm', 
-        readonly=True
-    )
+            $parent
+                .find('.o_product_tags')
+                .first()
+                .html(combination.product_tags);
 
+            this.handleCustomValues($(ev.target));
+        },
+    });
 
-class Pricelist(models.Model):
-    _inherit = 'product.pricelist'
-
-    def _compute_price_rule(self, products, quantity, **kwargs):
-        """Inherit to handle price per square meter in pricelist rules"""
-        results = super()._compute_price_rule(products, quantity, **kwargs)
-        return results
+    __exports[Symbol.for("default")] = VariantMixin;
+    return __exports;
+});
