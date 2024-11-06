@@ -67,7 +67,7 @@
                         <t t-set="combination_info" t-value="product._get_combination_info()"/>
                         <t t-set="min_price_sqm" t-value="min([v.price_per_sqm for v in product.product_variant_ids if v.price_per_sqm > 0] or [0])"/>
                         <t t-if="min_price_sqm">
-                            <span class="h6 mb-0" style="white-space: nowrap;">from 
+                            <span class="h6 mb-0" style="white-space: nowrap;">ab 
                                 <t t-esc="min_price_sqm" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²
                             </span>
                         </t>
@@ -87,9 +87,9 @@
         <t t-if="display_sqm">
             <div style="width: 100%; display: block; margin-top: 10px; clear: both;">
                 <div class="price_per_sqm_value" style="display: block; font-size: 1rem; font-weight: 700; clear: both;">
-                    Price per Squaremetere:
+                    Quadratmeterpreis:
                     <span class="oe_currency_value" t-esc="combination_info.get('price_per_sqm', 0.0)" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                    <span class="ms-1">€/m²</span>
+                    <span class="ms-1">/m²</span>
                 </div>
             </div>
         </t>
