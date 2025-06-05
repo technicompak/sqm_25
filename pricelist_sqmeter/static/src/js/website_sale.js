@@ -12,8 +12,6 @@ publicWidget.registry.WebsiteSale.include({
     _onChangeCombination: function (ev, $parent, combination) {
         this._super.apply(this, arguments);
         var self = this;
-        console.log("TABISH");
-        console.log("Combination data:", combination);  // Debug log
         
         var $price = $parent.find(".oe_price:first .oe_currency_value");
         var $minPriceSqmElement = $parent.find(".oe_price_new .oe_currency_value");
@@ -21,19 +19,21 @@ publicWidget.registry.WebsiteSale.include({
         var $optional_price = $parent.find(".oe_optional:first .oe_currency_value");
         
         $price.text(self._priceToStr(combination.list_price));
-        $minPriceSqmElement.text(self._priceToStr(combination.price_per_sqm || 0));
+        
+        // Update price per sqm based on filtered variants
+        if (combination.price_per_sqm !== undefined) {
+            $minPriceSqmElement.text(self._priceToStr(combination.price_per_sqm || 0));
+        }
+        
         $default_price.text(self._priceToStr(combination.list_price));
 
         // Price per square meter update
         var $pricePerSqm = $parent.find(".price_per_sqm_value > .oe_currency_value");
-        console.log("Price per sqm element found:", $pricePerSqm.length);  // Debug log
-        console.log("Price per sqm value:", combination.price_per_sqm);    // Debug log
         
         if ($pricePerSqm.length && combination.price_per_sqm !== undefined) {
             $pricePerSqm.text(self._priceToStr(combination.price_per_sqm));
         }
         
-        console.log(combination);
         var isCombinationPossible = true;
         if (typeof combination.is_combination_possible !== "undefined") {
             isCombinationPossible = combination.is_combination_possible;
