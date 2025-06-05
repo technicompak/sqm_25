@@ -68,7 +68,7 @@
                         <t t-set="filtered_variants" t-value="product.product_variant_ids.filtered(lambda v: v.active and v.website_published)"/>
                         <t t-set="min_price_sqm" t-value="min([v.price_per_sqm for v in filtered_variants if v.price_per_sqm > 0] or [0])"/>
                         <t t-if="min_price_sqm">
-                            <span class="h6 mb-0" style="white-space: nowrap;">ab/from
+                            <span class="h6 mb-0" style="white-space: nowrap;">ab 
                                 <t t-esc="min_price_sqm" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>/m²
                             </span>
                         </t>
