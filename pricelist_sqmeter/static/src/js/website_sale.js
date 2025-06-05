@@ -13,6 +13,11 @@ publicWidget.registry.WebsiteSale.include({
         this._super.apply(this, arguments);
         var self = this;
         
+        console.log("=== Combination Change Debug ===");
+        console.log("Combination data:", combination);
+        console.log("Product ID:", combination.product_id);
+        console.log("Price per sqm:", combination.price_per_sqm);
+        
         var $price = $parent.find(".oe_price:first .oe_currency_value");
         var $minPriceSqmElement = $parent.find(".oe_price_new .oe_currency_value");
         var $default_price = $parent.find(".oe_default_price:first .oe_currency_value");
@@ -22,6 +27,7 @@ publicWidget.registry.WebsiteSale.include({
         
         // Update price per sqm based on filtered variants
         if (combination.price_per_sqm !== undefined) {
+            console.log("Updating min price sqm element with:", combination.price_per_sqm);
             $minPriceSqmElement.text(self._priceToStr(combination.price_per_sqm || 0));
         }
         
@@ -29,14 +35,17 @@ publicWidget.registry.WebsiteSale.include({
 
         // Price per square meter update
         var $pricePerSqm = $parent.find(".price_per_sqm_value > .oe_currency_value");
+        console.log("Price per sqm element found:", $pricePerSqm.length);
         
         if ($pricePerSqm.length && combination.price_per_sqm !== undefined) {
+            console.log("Updating price per sqm with:", combination.price_per_sqm);
             $pricePerSqm.text(self._priceToStr(combination.price_per_sqm));
         }
         
         var isCombinationPossible = true;
         if (typeof combination.is_combination_possible !== "undefined") {
             isCombinationPossible = combination.is_combination_possible;
+            console.log("Combination possible:", isCombinationPossible);
         }
         this._toggleDisable($parent, isCombinationPossible);
 
@@ -100,6 +109,7 @@ publicWidget.registry.WebsiteSale.include({
             .html(combination.product_tags);
 
         this.handleCustomValues($(ev.target));
+        console.log("=== End Combination Change Debug ===");
     },
 });
 

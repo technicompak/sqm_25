@@ -21,6 +21,10 @@ class ProductTemplate(models.Model):
         website = self.env['website'].get_current_website()
         pricelist = website.pricelist_id
 
+        _logger.info(f'Getting combination info for template {self.name}')
+        _logger.info(f'Product ID: {product_id}')
+        _logger.info(f'Combination: {combination}')
+
         if product_id:
             product = self.env['product.product'].browse(product_id)
             price = product.list_price
@@ -45,13 +49,16 @@ class ProductTemplate(models.Model):
                     break
             
             combination_info['price_per_sqm'] = price / sqm if sqm else 0
+            _logger.info(f'Calculated price_per_sqm for product {product.name}: {combination_info["price_per_sqm"]}')
         else:
             # Get the first variant's price per sqm
             first_variant = self.product_variant_ids[:1]
             if first_variant:
                 combination_info['price_per_sqm'] = first_variant.price_per_sqm
+                _logger.info(f'Using first variant price_per_sqm: {first_variant.price_per_sqm}')
             else:
                 combination_info['price_per_sqm'] = 0.0
+                _logger.info('No variants found, setting price_per_sqm to 0')
 
         return combination_info
 
